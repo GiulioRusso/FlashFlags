@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>World Flags — Flashcards</title>
+<style>
+:root{--bg:#101418;--panel:#151b22;--muted:#8b9bb0;--text:#e6eef7;--accent:#5dd3ff;--accent-2:#8cff8c;--radius:18px;--shadow:0 10px 30px rgba(0,0,0,0.35)}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;background:radial-gradient(1200px 800px at 20% 10%, #0d1116, var(--bg));color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;display:grid;place-items:center;padding:24px}
+.app{width:100%;max-width:960px;display:grid;gap:18px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;align-items:center;gap:12px}.dot{width:10px;height:10px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent-2));box-shadow:0 0 18px rgba(93,211,255,0.35)}h1{font-size:1.25rem;margin:0}.hint{color:var(--muted);font-size:0.95rem}
+.controls-top{display:flex;gap:12px;align-items:center}
+select, label { background:#0f151c; color:var(--text); padding:10px 12px; border-radius:10px; outline:1px solid rgba(255,255,255,0.06); }
+.board{display:grid;gap:16px}.card-wrap{perspective:1200px}.card{position:relative;width:100%;aspect-ratio:16/10;transform-style:preserve-3d;transition:transform 650ms cubic-bezier(.2,.8,.2,1);border-radius:var(--radius);box-shadow:var(--shadow)}.card.flipped{transform:rotateY(180deg)}.face{position:absolute;inset:0;display:grid;place-items:center;padding:18px;backface-visibility:hidden;border-radius:var(--radius);background:linear-gradient(180deg,#111822,var(--panel));outline:1px solid rgba(255,255,255,0.06)}.face.front{overflow:hidden}.flag-frame{width:min(88%,780px);height:auto;aspect-ratio:4/3;border-radius:14px;background:#0c1117;display:grid;place-items:center;outline:1px solid rgba(255,255,255,0.06)}.flag-frame img{width:100%;height:100%;object-fit:contain}.face.back{transform:rotateY(180deg)}.country-name{font-size:clamp(1.5rem,3.5vw,2.6rem);font-weight:800;text-align:center}.meta{color:var(--muted);margin-top:6px;font-size:0.95rem}.toolbar{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}.controls{display:flex;gap:10px}button{-webkit-tap-highlight-color:transparent;cursor:pointer;border:none;padding:12px 16px;border-radius:12px;background:#0f151c;color:var(--text);font-weight:600;letter-spacing:.2px;outline:1px solid rgba(255,255,255,0.08);transition:transform .12s ease,outline-color .2s ease,background .2s ease}button:hover{outline-color:rgba(255,255,255,0.16)}button:active{transform:translateY(1px) scale(.99)}.primary{background:linear-gradient(180deg,#152232,#0e1620);outline-color:rgba(93,211,255,0.35);box-shadow:0 0 0 6px rgba(93,211,255,0.08) inset}.ghost{background:#0e151c}.good{background:linear-gradient(180deg,#18301b,#0e1f11);outline-color:rgba(140,255,140,0.3)}.bad{background:linear-gradient(180deg,#2c1618,#1a0f11);outline-color:rgba(255,120,120,0.25)}.progress{justify-self:center;color:var(--muted);font-size:0.95rem}footer{color:var(--muted);font-size:0.9rem;text-align:center}a{color:var(--accent);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<header>
+<div class="brand"><span class="dot" aria-hidden="true"></span><h1>World Flags — Flashcards</h1></div>
+<div class="hint">Tap the flag to flip</div>
+</header>
+
+<div class="controls-top">
+<label>
+Region: 
+<select id="regionSelect" aria-label="Region filter">
+  <option value="all">All</option>
+  <option value="Africa">Africa</option>
+  <option value="Americas">Americas</option>
+  <option value="Asia">Asia</option>
+  <option value="Europe">Europe</option>
+  <option value="Oceania">Oceania</option>
+  <option value="Antarctica">Antarctica</option>
+</select>
+</label>
+<button id="applyFilter" class="ghost">Apply</button>
+<div style="flex:1"></div>
+</div>
+
+<main class="board" aria-live="polite">
+<div class="card-wrap">
+<div id="card" class="card" role="button" tabindex="0" aria-label="Flag flashcard">
+<div class="face front" id="frontFace" title="Click or press Enter to reveal">
+  <div class="flag-frame">
+    <img id="flagImg" class="flag" alt="Flag" loading="lazy" />
+  </div>
+</div>
+<div class="face back">
+  <div>
+    <div id="countryName" class="country-name">—</div>
+    <div id="countryMeta" class="meta"></div>
+  </div>
+</div>
+</div>
+</div>
+
+<div class="toolbar" role="toolbar" aria-label="Controls">
+<div class="controls">
+<button id="prevBtn" class="ghost" aria-label="Previous">◀ Prev</button>
+<button id="shuffleBtn" class="ghost" aria-label="Shuffle">🔀 Shuffle</button>
+</div>
+
+<div class="progress"><span id="idx">0</span>/<span id="total">0</span></div>
+
+<div class="controls" style="justify-self:end">
+<button id="againBtn" class="bad" aria-label="Need practice">Need practice</button>
+<button id="gotItBtn" class="good" aria-label="I got it">I got it</button>
+<button id="nextBtn" class="primary" aria-label="Next">Next ▶</button>
+</div>
+</div>
+
+<div id="stats" class="progress">Correct: 0 • Need practice: 0</div>
+</main>
+
+<footer>
+Built for learning • Flags loaded from FlagCDN when available.
+</footer>
+</div>
+
+<script>
+(() => {
+const FLAG_SVG = code => `https://flagcdn.com/${code.toLowerCase()}.svg`;
+const FLAG_PNG = code => `https://flagcdn.com/w320/${code.toLowerCase()}.png`;
+const ALT_FALLBACK_SVG = code => `https://countryflagsapi.com/svg/${code.toLowerCase()}`;
+
+const FLAGS = [
+  // Africa
+  { code: "DZ", name: "Algeria", region: "Africa", recognized:true },
+  { code: "AO", name: "Angola", region: "Africa", recognized:true },
+  { code: "BJ", name: "Benin", region: "Africa", recognized:true },
+  { code: "BW", name: "Botswana", region: "Africa", recognized:true },
+  { code: "BF", name: "Burkina Faso", region: "Africa", recognized:true },
+  { code: "BI", name: "Burundi", region: "Africa", recognized:true },
+  { code: "CM", name: "Cameroon", region: "Africa", recognized:true },
+  { code: "CV", name: "Cape Verde", region: "Africa", recognized:true },
+  { code: "CF", name: "Central African Republic", region: "Africa", recognized:true },
+  { code: "TD", name: "Chad", region: "Africa", recognized:true },
+  { code: "KM", name: "Comoros", region: "Africa", recognized:true },
+  { code: "CG", name: "Congo (Brazzaville)", region: "Africa", recognized:true },
+  { code: "CD", name: "Congo (Kinshasa)", region: "Africa", recognized:true },
+  { code: "CI", name: "Côte d'Ivoire", region: "Africa", recognized:true },
+  { code: "DJ", name: "Djibouti", region: "Africa", recognized:true },
+  { code: "EG", name: "Egypt", region: "Africa", recognized:true },
+  { code: "GQ", name: "Equatorial Guinea", region: "Africa", recognized:true },
+  { code: "ER", name: "Eritrea", region: "Africa", recognized:true },
+  { code: "ET", name: "Ethiopia", region: "Africa", recognized:true },
+  { code: "GA", name: "Gabon", region: "Africa", recognized:true },
+  { code: "GM", name: "Gambia", region: "Africa", recognized:true },
+  { code: "GH", name: "Ghana", region: "Africa", recognized:true },
+  { code: "GN", name: "Guinea", region: "Africa", recognized:true },
+  { code: "GW", name: "Guinea-Bissau", region: "Africa", recognized:true },
+  { code: "KE", name: "Kenya", region: "Africa", recognized:true },
+  { code: "LS", name: "Lesotho", region: "Africa", recognized:true },
+  { code: "LR", name: "Liberia", region: "Africa", recognized:true },
+  { code: "LY", name: "Libya", region: "Africa", recognized:true },
+  { code: "MG", name: "Madagascar", region: "Africa", recognized:true },
+  { code: "MW", name: "Malawi", region: "Africa", recognized:true },
+  { code: "ML", name: "Mali", region: "Africa", recognized:true },
+  { code: "MR", name: "Mauritania", region: "Africa", recognized:true },
+  { code: "MU", name: "Mauritius", region: "Africa", recognized:true },
+  { code: "MA", name: "Morocco", region: "Africa", recognized:true },
+  { code: "MZ", name: "Mozambique", region: "Africa", recognized:true },
+  { code: "NA", name: "Namibia", region: "Africa", recognized:true },
+  { code: "NE", name: "Niger", region: "Africa", recognized:true },
+  { code: "NG", name: "Nigeria", region: "Africa", recognized:true },
+  { code: "RW", name: "Rwanda", region: "Africa", recognized:true },
+  { code: "ST", name: "São Tomé and Príncipe", region: "Africa", recognized:true },
+  { code: "SN", name: "Senegal", region: "Africa", recognized:true },
+  { code: "SC", name: "Seychelles", region: "Africa", recognized:true },
+  { code: "SL", name: "Sierra Leone", region: "Africa", recognized:true },
+  { code: "SO", name: "Somalia", region: "Africa", recognized:true },
+  { code: "ZA", name: "South Africa", region: "Africa", recognized:true },
+  { code: "SS", name: "South Sudan", region: "Africa", recognized:true },
+  { code: "SD", name: "Sudan", region: "Africa", recognized:true },
+  { code: "SZ", name: "Eswatini", region: "Africa", recognized:true },
+  { code: "TZ", name: "Tanzania", region: "Africa", recognized:true },
+  { code: "TG", name: "Togo", region: "Africa", recognized:true },
+  { code: "TN", name: "Tunisia", region: "Africa", recognized:true },
+  { code: "UG", name: "Uganda", region: "Africa", recognized:true },
+  { code: "ZM", name: "Zambia", region: "Africa", recognized:true },
+  { code: "ZW", name: "Zimbabwe", region: "Africa", recognized:true },
+
+  // Americas
+  { code: "AR", name: "Argentina", region: "Americas", recognized:true },
+  { code: "BS", name: "Bahamas", region: "Americas", recognized:true },
+  { code: "BB", name: "Barbados", region: "Americas", recognized:true },
+  { code: "BZ", name: "Belize", region: "Americas", recognized:true },
+  { code: "BO", name: "Bolivia", region: "Americas", recognized:true },
+  { code: "BR", name: "Brazil", region: "Americas", recognized:true },
+  { code: "CA", name: "Canada", region: "Americas", recognized:true },
+  { code: "CL", name: "Chile", region: "Americas", recognized:true },
+  { code: "CO", name: "Colombia", region: "Americas", recognized:true },
+  { code: "CR", name: "Costa Rica", region: "Americas", recognized:true },
+  { code: "CU", name: "Cuba", region: "Americas", recognized:true },
+  { code: "DO", name: "Dominican Republic", region: "Americas", recognized:true },
+  { code: "EC", name: "Ecuador", region: "Americas", recognized:true },
+  { code: "SV", name: "El Salvador", region: "Americas", recognized:true },
+  { code: "GT", name: "Guatemala", region: "Americas", recognized:true },
+  { code: "GY", name: "Guyana", region: "Americas", recognized:true },
+  { code: "HT", name: "Haiti", region: "Americas", recognized:true },
+  { code: "HN", name: "Honduras", region: "Americas", recognized:true },
+  { code: "JM", name: "Jamaica", region: "Americas", recognized:true },
+  { code: "MX", name: "Mexico", region: "Americas", recognized:true },
+  { code: "NI", name: "Nicaragua", region: "Americas", recognized:true },
+  { code: "PA", name: "Panama", region: "Americas", recognized:true },
+  { code: "PY", name: "Paraguay", region: "Americas", recognized:true },
+  { code: "PE", name: "Peru", region: "Americas", recognized:true },
+  { code: "SR", name: "Suriname", region: "Americas", recognized:true },
+  { code: "TT", name: "Trinidad and Tobago", region: "Americas", recognized:true },
+  { code: "US", name: "United States", region: "Americas", recognized:true },
+  { code: "UY", name: "Uruguay", region: "Americas", recognized:true },
+  { code: "VE", name: "Venezuela", region: "Americas", recognized:true },
+
+  // Asia
+  { code: "AF", name: "Afghanistan", region: "Asia", recognized:true },
+  { code: "AM", name: "Armenia", region: "Asia", recognized:true },
+  { code: "AZ", name: "Azerbaijan", region: "Asia", recognized:true },
+  { code: "BH", name: "Bahrain", region: "Asia", recognized:true },
+  { code: "BD", name: "Bangladesh", region: "Asia", recognized:true },
+  { code: "BT", name: "Bhutan", region: "Asia", recognized:true },
+  { code: "BN", name: "Brunei", region: "Asia", recognized:true },
+  { code: "KH", name: "Cambodia", region: "Asia", recognized:true },
+  { code: "CN", name: "China", region: "Asia", recognized:true },
+  { code: "CY", name: "Cyprus", region: "Asia", recognized:true },
+  { code: "GE", name: "Georgia", region: "Asia", recognized:true },
+  { code: "IN", name: "India", region: "Asia", recognized:true },
+  { code: "ID", name: "Indonesia", region: "Asia", recognized:true },
+  { code: "IR", name: "Iran", region: "Asia", recognized:true },
+  { code: "IQ", name: "Iraq", region: "Asia", recognized:true },
+  { code: "IL", name: "Israel", region: "Asia", recognized:true },
+  { code: "JP", name: "Japan", region: "Asia", recognized:true },
+  { code: "JO", name: "Jordan", region: "Asia", recognized:true },
+  { code: "KZ", name: "Kazakhstan", region: "Asia", recognized:true },
+  { code: "KW", name: "Kuwait", region: "Asia", recognized:true },
+  { code: "KG", name: "Kyrgyzstan", region: "Asia", recognized:true },
+  { code: "LA", name: "Laos", region: "Asia", recognized:true },
+  { code: "LB", name: "Lebanon", region: "Asia", recognized:true },
+  { code: "MY", name: "Malaysia", region: "Asia", recognized:true },
+  { code: "MV", name: "Maldives", region: "Asia", recognized:true },
+  { code: "MN", name: "Mongolia", region: "Asia", recognized:true },
+  { code: "MM", name: "Myanmar", region: "Asia", recognized:true },
+  { code: "NP", name: "Nepal", region: "Asia", recognized:true },
+  { code: "KP", name: "North Korea", region: "Asia", recognized:true },
+  { code: "OM", name: "Oman", region: "Asia", recognized:true },
+  { code: "PK", name: "Pakistan", region: "Asia", recognized:true },
+  { code: "PS", name: "Palestine", region: "Asia", recognized:false, customUrl: "https://upload.wikimedia.org/wikipedia/commons/0/00/Flag_of_Palestine.svg" },
+  { code: "PH", name: "Philippines", region: "Asia", recognized:true },
+  { code: "QA", name: "Qatar", region: "Asia", recognized:true },
+  { code: "SA", name: "Saudi Arabia", region: "Asia", recognized:true },
+  { code: "SG", name: "Singapore", region: "Asia", recognized:true },
+  { code: "KR", name: "South Korea", region: "Asia", recognized:true },
+  { code: "LK", name: "Sri Lanka", region: "Asia", recognized:true },
+  { code: "SY", name: "Syria", region: "Asia", recognized:true },
+  { code: "TW", name: "Taiwan", region: "Asia", recognized:false, customUrl:"https://upload.wikimedia.org/wikipedia/commons/7/72/Flag_of_the_Republic_of_China.svg" },
+  { code: "TJ", name: "Tajikistan", region: "Asia", recognized:true },
+  { code: "TH", name: "Thailand", region: "Asia", recognized:true },
+  { code: "TL", name: "Timor-Leste", region: "Asia", recognized:true },
+  { code: "TM", name: "Turkmenistan", region: "Asia", recognized:true },
+  { code: "AE", name: "United Arab Emirates", region: "Asia", recognized:true },
+  { code: "UZ", name: "Uzbekistan", region: "Asia", recognized:true },
+  { code: "VN", name: "Vietnam", region: "Asia", recognized:true },
+  { code: "YE", name: "Yemen", region: "Asia", recognized:true },
+
+  // Europe
+  { code: "AL", name: "Albania", region: "Europe", recognized:true },
+  { code: "AD", name: "Andorra", region: "Europe", recognized:true },
+  { code: "AT", name: "Austria", region: "Europe", recognized:true },
+  { code: "BY", name: "Belarus", region: "Europe", recognized:true },
+  { code: "BE", name: "Belgium", region: "Europe", recognized:true },
+  { code: "BA", name: "Bosnia and Herzegovina", region: "Europe", recognized:true },
+  { code: "BG", name: "Bulgaria", region: "Europe", recognized:true },
+  { code: "HR", name: "Croatia", region: "Europe", recognized:true },
+  { code: "CZ", name: "Czechia", region: "Europe", recognized:true },
+  { code: "DK", name: "Denmark", region: "Europe", recognized:true },
+  { code: "EE", name: "Estonia", region: "Europe", recognized:true },
+  { code: "FI", name: "Finland", region: "Europe", recognized:true },
+  { code: "FR", name: "France", region: "Europe", recognized:true },
+  { code: "DE", name: "Germany", region: "Europe", recognized:true },
+  { code: "GR", name: "Greece", region: "Europe", recognized:true },
+  { code: "HU", name: "Hungary", region: "Europe", recognized:true },
+  { code: "IS", name: "Iceland", region: "Europe", recognized:true },
+  { code: "IE", name: "Ireland", region: "Europe", recognized:true },
+  { code: "IT", name: "Italy", region: "Europe", recognized:true },
+  { code: "XK", name: "Kosovo", region: "Europe", recognized:false, customUrl:"https://upload.wikimedia.org/wikipedia/commons/6/6f/Flag_of_Kosovo.svg" },
+  { code: "LV", name: "Latvia", region: "Europe", recognized:true },
+  { code: "LI", name: "Liechtenstein", region: "Europe", recognized:true },
+  { code: "LT", name: "Lithuania", region: "Europe", recognized:true },
+  { code: "LU", name: "Luxembourg", region: "Europe", recognized:true },
+  { code: "MT", name: "Malta", region: "Europe", recognized:true },
+  { code: "MD", name: "Moldova", region: "Europe", recognized:true },
+  { code: "MC", name: "Monaco", region: "Europe", recognized:true },
+  { code: "ME", name: "Montenegro", region: "Europe", recognized:true },
+  { code: "NL", name: "Netherlands", region: "Europe", recognized:true },
+  { code: "MK", name: "North Macedonia", region: "Europe", recognized:true },
+  { code: "NO", name: "Norway", region: "Europe", recognized:true },
+  { code: "PL", name: "Poland", region: "Europe", recognized:true },
+  { code: "PT", name: "Portugal", region: "Europe", recognized:true },
+  { code: "RO", name: "Romania", region: "Europe", recognized:true },
+  { code: "RU", name: "Russia", region: "Europe", recognized:true },
+  { code: "SM", name: "San Marino", region: "Europe", recognized:true },
+  { code: "RS", name: "Serbia", region: "Europe", recognized:true },
+  { code: "SK", name: "Slovakia", region: "Europe", recognized:true },
+  { code: "SI", name: "Slovenia", region: "Europe", recognized:true },
+  { code: "ES", name: "Spain", region: "Europe", recognized:true },
+  { code: "SE", name: "Sweden", region: "Europe", recognized:true },
+  { code: "CH", name: "Switzerland", region: "Europe", recognized:true },
+  { code: "UA", name: "Ukraine", region: "Europe", recognized:true },
+  { code: "GB", name: "United Kingdom", region: "Europe", recognized:true },
+  { code: "VA", name: "Vatican City", region: "Europe", recognized:true },
+
+  // Oceania
+  { code: "AU", name: "Australia", region: "Oceania", recognized:true },
+  { code: "FJ", name: "Fiji", region: "Oceania", recognized:true },
+  { code: "KI", name: "Kiribati", region: "Oceania", recognized:true },
+  { code: "MH", name: "Marshall Islands", region: "Oceania", recognized:true },
+  { code: "FM", name: "Micronesia", region: "Oceania", recognized:true },
+  { code: "NR", name: "Nauru", region: "Oceania", recognized:true },
+  { code: "NZ", name: "New Zealand", region: "Oceania", recognized:true },
+  { code: "PW", name: "Palau", region: "Oceania", recognized:true },
+  { code: "PG", name: "Papua New Guinea", region: "Oceania", recognized:true },
+  { code: "WS", name: "Samoa", region: "Oceania", recognized:true },
+  { code: "SB", name: "Solomon Islands", region: "Oceania", recognized:true },
+  { code: "TO", name: "Tonga", region: "Oceania", recognized:true },
+  { code: "TV", name: "Tuvalu", region: "Oceania", recognized:true },
+  { code: "VU", name: "Vanuatu", region: "Oceania", recognized:true }
+];
+
+let order = [], idx = 0;
+let stats = { got: 0, again: 0 };
+
+const els = {
+  card: document.getElementById('card'),
+  flag: document.getElementById('flagImg'),
+  name: document.getElementById('countryName'),
+  meta: document.getElementById('countryMeta'),
+  idxText: document.getElementById('idx'),
+  totalText: document.getElementById('total'),
+  prev: document.getElementById('prevBtn'),
+  next: document.getElementById('nextBtn'),
+  shuffle: document.getElementById('shuffleBtn'),
+  again: document.getElementById('againBtn'),
+  gotIt: document.getElementById('gotItBtn'),
+  regionSelect: document.getElementById('regionSelect'),
+  applyFilter: document.getElementById('applyFilter'),
+  stats: document.getElementById('stats')
+};
+
+// --- Utilities ---
+function shuffleArr(a){ for(let j=a.length-1;j>0;j--){const k=Math.floor(Math.random()*(j+1));[a[j],a[k]]=[a[k],a[j]]} return a }
+
+const io = new IntersectionObserver((entries)=>{ 
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+  const img = entry.target;
+  if(img.dataset.src) img.src = img.dataset.src;
+  io.unobserve(img);
+}});}, { rootMargin: '220px' });
+
+function observeAndLoad(imgEl){ if(!imgEl.dataset.src) return; io.observe(imgEl); }
+
+function prefetchNext(orderIndex){ const item = FLAGS[orderIndex]; if(!item) return; const link = document.createElement('link'); link.rel='preload'; link.as='image'; link.href = item.customUrl || FLAG_PNG(item.code); document.head.appendChild(link); }
+
+function buildFilteredOrder(){
+  const region = els.regionSelect.value;
+  let filtered = FLAGS.map((f,i)=>({f,i})).filter(({f}) => region==='all'||f.region.includes(region));
+  if(filtered.length===0) filtered = FLAGS.map((f,i)=>({f,i}));
+  return shuffleArr(filtered.map(x=>x.i));
+}
+
+function updateUI(){
+  if(!order.length) return;
+  const item = FLAGS[order[idx]];
+  els.flag.dataset.code = item.code || '';
+  els.flag.dataset.custom = item.customUrl || '';
+  els.flag.dataset.src = item.customUrl || FLAG_SVG(item.code);
+  els.flag.dataset.png = FLAG_PNG(item.code);
+  els.flag.dataset.fallback = item.customUrl || FLAG_PNG(item.code);
+  els.name.textContent = item.name;
+  els.meta.textContent = `${item.region}${item.recognized===false?' • Unrecognized':''}`;
+  els.idxText.textContent = idx+1;
+  els.totalText.textContent = order.length;
+  els.card.classList.remove('flipped');
+  observeAndLoad(els.flag);
+  prefetchNext(order[(idx+1)%order.length]);
+  els.stats.textContent = `Correct: ${stats.got} • Need practice: ${stats.again}`;
+}
+
+// --- Event handlers ---
+els.card.addEventListener('click',()=>els.card.classList.toggle('flipped'));
+els.card.addEventListener('keydown',e=>{if(e.key==='Enter') els.card.classList.toggle('flipped')});
+els.prev.addEventListener('click',()=>{ idx = (idx-1+order.length)%order.length; updateUI(); });
+els.next.addEventListener('click',()=>{ idx = (idx+1)%order.length; updateUI(); });
+els.shuffle.addEventListener('click',()=>{ order = shuffleArr([...order]); idx=0; updateUI(); });
+els.again.addEventListener('click',()=>{ stats.again++; idx = (idx+1)%order.length; updateUI(); });
+els.gotIt.addEventListener('click',()=>{ stats.got++; idx = (idx+1)%order.length; updateUI(); });
+els.applyFilter.addEventListener('click',()=>{ order=buildFilteredOrder(); idx=0; stats={got:0,again:0}; updateUI(); });
+
+// --- Init ---
+order = buildFilteredOrder();
+updateUI();
+})();
+</script>
+</body>
+</html>
