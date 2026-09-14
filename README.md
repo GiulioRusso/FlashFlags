@@ -2,7 +2,7 @@
 
 Web app to study vexillology and memorize the flags of the world.
 
-Open `index.html` in your browser — no setup required —  or visit http://flashflags.com
+Open `index.html` in your browser. No setup required.
 
 <br><img src="./doc/image.png" width=500px><br>
 
